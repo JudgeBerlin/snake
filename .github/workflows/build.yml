@@ -1,7 +1,9 @@
-name: Testing[main]
+name: Building[main]
+
 on:
   push:
-    branches: [ main ]
+    tags:
+      - "v*.*.*"
 
 jobs:
   # Build the Hello World test application
@@ -24,6 +26,7 @@ jobs:
     
     - name: Release
       uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
           ${{ steps.love-build.outputs.macos-filename }}
