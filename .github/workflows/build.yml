@@ -22,22 +22,59 @@ jobs:
         love_version: ${{ matrix.love_version }}
         source_dir: './src'
 
-    - uses: actions/upload-artifact@v1
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        name: hw_macos-build
-        path: ${{ steps.love-build.outputs.macos-filename }}
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+    
+    - name: Upload Macos Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: ${{ steps.love-build.outputs.macos-filename }}
+          asset_name: macos.zip
+          asset_content_type: application/zip
 
-    - uses: actions/upload-artifact@v1
-      with:
-        name: hw_win32-build
-        path: ${{ steps.love-build.outputs.win32-filename }}
+    
+    - name: Upload Win32 Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: ${{ steps.love-build.outputs.win32-filename }}
+          asset_name: win32.zip
+          asset_content_type: application/zip
 
-    - uses: actions/upload-artifact@v1
-      with:
-        name: hw_win64-build
-        path: ${{ steps.love-build.outputs.win64-filename }}
+    
+    - name: Upload Win64 Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: ${{ steps.love-build.outputs.win64-filename }}
+          asset_name: win64.zip
+          asset_content_type: application/zip
 
-    - uses: actions/upload-artifact@v1
-      with:
-        name: hw_love-build
-        path: ${{ steps.love-build.outputs.love-filename }}
+    
+    - name: Upload Love Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: ${{ steps.love-build.outputs.love-filename }}
+          asset_name: love.zip
+          asset_content_type: application/zip
