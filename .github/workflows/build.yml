@@ -33,7 +33,7 @@ jobs:
         prerelease: false
     
     - name: Upload Macos Release Asset
-        id: upload-release-asset 
+        id: upload-macos-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -45,7 +45,7 @@ jobs:
 
     
     - name: Upload Win32 Release Asset
-        id: upload-release-asset 
+        id: upload-win32-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -57,7 +57,7 @@ jobs:
 
     
     - name: Upload Win64 Release Asset
-        id: upload-release-asset 
+        id: upload-win64-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -69,7 +69,7 @@ jobs:
 
     
     - name: Upload Love Release Asset
-        id: upload-release-asset 
+        id: upload-love-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
