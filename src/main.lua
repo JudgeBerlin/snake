@@ -1,6 +1,6 @@
 
 NUMBER_OF_COOKIES = 50
-SLEEP_TIMEOUT = 0.07
+SLEEP_TIMEOUT = 0.03
 MAX_SNAKE_LENGTH = 10
 SNAKE_LENGTH = 0
 STATUS = 'START'
@@ -40,9 +40,9 @@ function love.mousepressed(x, y, button, istouch)
   if button == 1 then -- Versions prior to 0.10.0 use the MouseConstant 'l'
     local width, height = love.graphics.getDimensions()
     local directions = {"left", "right", "up", "down"}
-    POSITION_X = math.floor((math.random() * width) / 10 + 0.5) * 10
-    POSITION_Y = math.floor((math.random() * height) / 10 + 0.5) * 10
-    MAX_SNAKE_LENGTH = 10
+    POSITION_X = math.floor(math.random() * width)
+    POSITION_Y = math.floor(math.random() * height)
+    MAX_SNAKE_LENGTH = 50
     SNAKE_LENGTH = 0
     POSITIONS = {}
     COOKIES = {}
@@ -61,19 +61,19 @@ function love.draw()
   
   if STATUS == "PLAYING" then
     if DIRECTION == "up" then
-      POSITION_Y = POSITION_Y - 10
+      POSITION_Y = POSITION_Y - 5
     end
     
     if DIRECTION == "down" then
-      POSITION_Y = POSITION_Y + 10
+      POSITION_Y = POSITION_Y + 5
     end
     
     if DIRECTION == "left" then
-      POSITION_X = POSITION_X - 10
+      POSITION_X = POSITION_X - 5
     end
   
     if DIRECTION == "right" then
-      POSITION_X = POSITION_X + 10
+      POSITION_X = POSITION_X + 5
     end
   
     if POSITION_X < 0 or POSITION_X > width or POSITION_Y < 0 or POSITION_Y > height then
@@ -81,9 +81,9 @@ function love.draw()
     end
 
     for i, cookie in ipairs(COOKIES) do
-      if cookie[1] == POSITION_X and cookie[2] == POSITION_Y then
+      if  (cookie[2] + 10  >  POSITION_Y )  and ( cookie[2]  < POSITION_Y + 10 ) and (cookie[1] + 10  >  POSITION_X )  and ( cookie[1]  < POSITION_X + 10 )  then
         SCORE = SCORE + 1
-        MAX_SNAKE_LENGTH = MAX_SNAKE_LENGTH + 5
+        MAX_SNAKE_LENGTH = MAX_SNAKE_LENGTH + 10
         SLEEP_TIMEOUT = SLEEP_TIMEOUT - 0.0001
     		-- psystem:emit(32)
 
@@ -99,18 +99,15 @@ function love.draw()
     end
 
     if #COOKIES < NUMBER_OF_COOKIES then
-      local cookie_x = math.random(0, width / 10)
-      local cookie_y = math.random(0, height / 10)
-      table.insert(COOKIES, {cookie_x * 10, cookie_y * 10})
+      local cookie_x = math.random(0, width)
+      local cookie_y = math.random(0, height)
+      table.insert(COOKIES, {cookie_x, cookie_y})
     end
 
     
     local new_position = {}
     new_position.x = POSITION_X
     new_position.y = POSITION_Y
-    new_position.red = math.random(0, 255) / 255
-    new_position.green = math.random(0, 255) / 255
-    new_position.blue = math.random(0, 255) / 255
 
     if #POSITIONS < MAX_SNAKE_LENGTH then
       POSITIONS[SNAKE_LENGTH] = new_position
@@ -139,8 +136,16 @@ function love.draw()
   end
 
   -- print snake tail
+  x = 0
   for i, position in ipairs(POSITIONS) do
-    love.graphics.setColor(position.red, position.green, position.blue)
+    if x % 4 == 0 then
+      r, g, b, a = love.math.colorFromBytes(0, 204, 0)
+    else
+      r, g, b, a = love.math.colorFromBytes(0, 102, 0)
+    end
+    x = x + 1
+
+    love.graphics.setColor(r, g, b, a)
     love.graphics.ellipse("fill", position.x, position.y, 5, 5)
   end
   
