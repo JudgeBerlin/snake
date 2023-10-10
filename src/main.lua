@@ -18,6 +18,9 @@ SCORE = 0
 score_font = love.graphics.newFont("font.ttf", 12)
 game_over_font = love.graphics.newFont("font.ttf", 40)
 
+ico = love.image.newImageData("icon.png")
+love.window.setIcon(ico)
+
 function love.keypressed(key)
   if key == "up" and DIRECTION ~= "down" then
     DIRECTION = "up"
