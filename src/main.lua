@@ -1,137 +1,148 @@
-local position_x = 0
-local position_y = 0
-local positions = {}
-local cookies = {}
-local direction = "right"
-local playing = true
-local snake_length = 10
-local score = 0
-local sleep_timeout = 0.1
-local blip = love.audio.newSource("blip.wav", "static")
 
-blip:setVolume(0.1)
-
+NUMBER_OF_COOKIES = 50
+SLEEP_TIMEOUT = 0.07
+MAX_SNAKE_LENGTH = 10
+SNAKE_LENGTH = 0
+STATUS = 'START'
+BLIP = love.audio.newSource("blip.wav", "static")
+GAME_OVER_SOUND = love.audio.newSource("the-price-is-right-losing-horn.mp3", "static")
+BLIP:setVolume(0.1)
 love.graphics.setPointSize(10)
-
-function love.draw()
-  -- print the current score on screen
-  love.graphics.print("Score: " .. score, 10, 10)
-
-  -- prints the snake tail
-  for i, position in ipairs(positions) do
-    love.graphics.points(position[1], position[2])
-  end
-
-  -- prints the cookies
-  for i, cookie in ipairs(cookies) do
-    love.graphics.points(cookie[1], cookie[2])
-  end
-  
-  -- if the number of cookies on screen is less than 5, create a new one
-  if #cookies < 100 then
-    create_random_cookie()
-  end
-
-  -- keep the number of positions in the table to 100
-  if #positions > snake_length then
-    table.remove(positions, 1)
-  end
-
-  -- function called to see if up/down/left/right are pressed
-  update_current_position()
-
-
-  -- if the current position is in the table then stop the game
-  for i, position in ipairs(positions) do
-    if position[1] == position_x and position[2] == position_y then
-      playing = false
-    end
-  end
-  
-  -- if the snake is out of the screen, stop the game
-  if position_x < 0 or position_x > 800 or position_y < 0 or position_y > 600 then
-    playing = false
-  end
-  
-  -- if the snake is on a cookie, increase the score and the snake length
-  for i, cookie in ipairs(cookies) do
-    if cookie[1] == position_x and cookie[2] == position_y then
-      score = score + 1
-      snake_length = snake_length + 10
-      sleep_timeout = sleep_timeout - 0.002
-  
-      blip:play()
-      table.remove(cookies, i)
-    end
-  end
-
-  -- print on the screen that the game is over
-  if playing == false then
-    love.graphics.print("Game Over", 400, 300)
-  end
-
-  -- if the current position is not in the positions table, add it
-  if playing == true then
-    table.insert(positions, {position_x, position_y})
-    love.graphics.points(position_x, position_y)
-  end
-
-  love.timer.sleep(sleep_timeout)
-end
-
-function create_random_cookie()
-  local width, height = love.graphics.getDimensions()
-  local cookie_x = math.random(0, width / 10)
-  local cookie_y = math.random(0, height / 10)
-  table.insert(cookies, {cookie_x * 10, cookie_y * 10})
-end
-
-function update_current_position()
-  if direction == "up" then
-    position_y = position_y - 10
-  end
-  
-  if direction == "down" then
-    position_y = position_y + 10
-  end
-  
-  if direction == "left" then
-    position_x = position_x - 10
-  end
-
-  if direction == "right" then
-    position_x = position_x + 10
-  end
-end
+love.window.setFullscreen(true)
+POSITION_X = 0
+POSITION_Y = 0
+POSITIONS = {}
+COOKIES = {}
+DIRECTION = "right"
+SCORE = 0
+score_font = love.graphics.newFont("font.ttf", 12)
+game_over_font = love.graphics.newFont("font.ttf", 40)
 
 function love.keypressed(key)
-  if key == "up" and direction ~= "down" then
-    direction = "up"
+  if key == "up" and DIRECTION ~= "down" then
+    DIRECTION = "up"
   end
   
-  if key == "down" and direction ~= "up" then
-    direction = "down"
+  if key == "down" and DIRECTION ~= "up" then
+    DIRECTION = "down"
   end
   
-  if key == "left" and direction ~= "right" then
-    direction = "left"
+  if key == "left" and DIRECTION ~= "right" then
+    DIRECTION = "left"
   end
   
-  if key == "right" and direction ~= "left" then
-    direction = "right"
+  if key == "right" and DIRECTION ~= "left" then
+    DIRECTION = "right"
   end
 end
 
 function love.mousepressed(x, y, button, istouch)
   if button == 1 then -- Versions prior to 0.10.0 use the MouseConstant 'l'
-    position_x = 0
-    position_y = 0
-    positions = {}
-    cookies = {}
-    direction = "right"
-    playing = true
-    snake_length = 10
-    score = 0
-    sleep_timeout = 0.1
+    local width, height = love.graphics.getDimensions()
+    local directions = {"left", "right", "up", "down"}
+    POSITION_X = math.floor((math.random() * width) / 10 + 0.5) * 10
+    POSITION_Y = math.floor((math.random() * height) / 10 + 0.5) * 10
+    MAX_SNAKE_LENGTH = 10
+    SNAKE_LENGTH = 0
+    POSITIONS = {}
+    COOKIES = {}
+    DIRECTION = directions[math.random(1, 4)]
+    SCORE = 0  
+    STATUS = 'PLAYING'  
   end
+end
+
+function love.draw()
+  local width, height = love.graphics.getDimensions()
+
+  love.graphics.setColor(1, 1, 1)
+  love.graphics.setFont(score_font)
+  love.graphics.print("Score: " .. SCORE, 10, 10)
+  
+  if STATUS == "PLAYING" then
+    if DIRECTION == "up" then
+      POSITION_Y = POSITION_Y - 10
+    end
+    
+    if DIRECTION == "down" then
+      POSITION_Y = POSITION_Y + 10
+    end
+    
+    if DIRECTION == "left" then
+      POSITION_X = POSITION_X - 10
+    end
+  
+    if DIRECTION == "right" then
+      POSITION_X = POSITION_X + 10
+    end
+  
+    if POSITION_X < 0 or POSITION_X > width or POSITION_Y < 0 or POSITION_Y > height then
+      STATUS = 'GAME_OVER'
+    end
+
+    for i, cookie in ipairs(COOKIES) do
+      if cookie[1] == POSITION_X and cookie[2] == POSITION_Y then
+        SCORE = SCORE + 1
+        MAX_SNAKE_LENGTH = MAX_SNAKE_LENGTH + 5
+        SLEEP_TIMEOUT = SLEEP_TIMEOUT - 0.0001
+    		-- psystem:emit(32)
+
+        BLIP:play()
+        table.remove(COOKIES, i)
+      end
+    end
+
+    for i, position in ipairs(POSITIONS) do
+      if position.x == POSITION_X and position.y == POSITION_Y then
+        STATUS = 'GAME_OVER'
+      end
+    end
+
+    if #COOKIES < NUMBER_OF_COOKIES then
+      local cookie_x = math.random(0, width / 10)
+      local cookie_y = math.random(0, height / 10)
+      table.insert(COOKIES, {cookie_x * 10, cookie_y * 10})
+    end
+
+    
+    local new_position = {}
+    new_position.x = POSITION_X
+    new_position.y = POSITION_Y
+    new_position.red = math.random(0, 255) / 255
+    new_position.green = math.random(0, 255) / 255
+    new_position.blue = math.random(0, 255) / 255
+
+    if #POSITIONS < MAX_SNAKE_LENGTH then
+      POSITIONS[SNAKE_LENGTH] = new_position
+      table.insert(POSITIONS, new_position)
+    else
+      table.remove(POSITIONS, 1)
+      table.insert(POSITIONS, new_position)
+    end
+
+    -- print_cookies
+    for i, cookie in ipairs(COOKIES) do
+      love.graphics.setColor(1, 1, 1)
+      love.graphics.ellipse("fill", cookie[1], cookie[2], 5, 5)
+    end
+  end
+
+  if STATUS == 'GAME_OVER' then
+    STATUS = 'ENDED'
+    GAME_OVER_SOUND:play()
+  end
+
+  if STATUS == 'ENDED' then
+    love.graphics.setFont(game_over_font)
+    love.graphics.printf("GAME OVER!!!", 0, height / 2, width, 'center')
+    love.graphics.printf("FINAL SCORE " .. SCORE, 0, height / 2 + 50, width, 'center')
+  end
+
+  -- print snake tail
+  for i, position in ipairs(POSITIONS) do
+    love.graphics.setColor(position.red, position.green, position.blue)
+    love.graphics.ellipse("fill", position.x, position.y, 5, 5)
+  end
+  
+  love.timer.sleep(SLEEP_TIMEOUT)
 end
