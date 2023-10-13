@@ -1,8 +1,8 @@
 
 NUMBER_OF_COOKIES = 50
-SLEEP_TIMEOUT = 0.03
 MAX_SNAKE_LENGTH = 10
 SNAKE_LENGTH = 0
+SNAKE_SPEED = 100
 STATUS = 'START'
 BLIP = love.audio.newSource("blip.wav", "static")
 GAME_OVER_SOUND = love.audio.newSource("the-price-is-right-losing-horn.mp3", "static")
@@ -20,6 +20,13 @@ game_over_font = love.graphics.newFont("font.ttf", 40)
 
 ico = love.image.newImageData("icon.png")
 love.window.setIcon(ico)
+
+function check_collision(x1,y1,w1,h1, x2,y2,w2,h2)
+  return x1 < x2+w2 and
+         x2 < x1+w1 and
+         y1 < y2+h2 and
+         y2 < y1+h1
+end
 
 function love.keypressed(key)
   if key == "up" and DIRECTION ~= "down" then
@@ -47,6 +54,7 @@ function love.mousepressed(x, y, button, istouch)
     POSITION_Y = math.floor(math.random() * height)
     MAX_SNAKE_LENGTH = 50
     SNAKE_LENGTH = 0
+    SNAKE_SPEED = 100
     POSITIONS = {}
     COOKIES = {}
     DIRECTION = directions[math.random(1, 4)]
@@ -61,43 +69,44 @@ function love.draw()
   love.graphics.setColor(1, 1, 1)
   love.graphics.setFont(score_font)
   love.graphics.print("Score: " .. SCORE, 10, 10)
-  
+  local dt = love.timer.getDelta()
+  local speed = (SNAKE_SPEED * dt)
+
   if STATUS == "PLAYING" then
     if DIRECTION == "up" then
-      POSITION_Y = POSITION_Y - 5
+      POSITION_Y = POSITION_Y - speed
     end
     
     if DIRECTION == "down" then
-      POSITION_Y = POSITION_Y + 5
+      POSITION_Y = POSITION_Y + speed
     end
     
     if DIRECTION == "left" then
-      POSITION_X = POSITION_X - 5
+      POSITION_X = POSITION_X - speed
     end
   
     if DIRECTION == "right" then
-      POSITION_X = POSITION_X + 5
+      POSITION_X = POSITION_X + speed
     end
   
     if POSITION_X < 0 or POSITION_X > width or POSITION_Y < 0 or POSITION_Y > height then
       STATUS = 'GAME_OVER'
     end
 
-    for i, cookie in ipairs(COOKIES) do
-      if  (cookie[2] + 10  >  POSITION_Y )  and ( cookie[2]  < POSITION_Y + 10 ) and (cookie[1] + 10  >  POSITION_X )  and ( cookie[1]  < POSITION_X + 10 )  then
-        SCORE = SCORE + 1
-        MAX_SNAKE_LENGTH = MAX_SNAKE_LENGTH + 10
-        SLEEP_TIMEOUT = SLEEP_TIMEOUT - 0.0001
-    		-- psystem:emit(32)
-
-        BLIP:play()
-        table.remove(COOKIES, i)
+    for i, position in ipairs(POSITIONS) do
+      if check_collision(POSITION_X,POSITION_Y,10,10, position.x,position.y,10,10) then
+        -- STATUS = 'GAME_OVER'
       end
     end
 
-    for i, position in ipairs(POSITIONS) do
-      if position.x == POSITION_X and position.y == POSITION_Y then
-        STATUS = 'GAME_OVER'
+    for i, cookie in ipairs(COOKIES) do
+      if (cookie[2] + 10 > POSITION_Y) and (cookie[2] < POSITION_Y + 10) and (cookie[1] + 10 > POSITION_X) and (cookie[1] < POSITION_X + 10) then
+        SCORE = SCORE + 1
+        MAX_SNAKE_LENGTH = MAX_SNAKE_LENGTH + 40
+        SNAKE_SPEED = SNAKE_SPEED + 4
+
+        BLIP:play()
+        table.remove(COOKIES, i)
       end
     end
 
@@ -141,7 +150,7 @@ function love.draw()
   -- print snake tail
   x = 0
   for i, position in ipairs(POSITIONS) do
-    if x % 4 == 0 then
+    if x % 20 > 10 then
       r, g, b, a = love.math.colorFromBytes(0, 204, 0)
     else
       r, g, b, a = love.math.colorFromBytes(0, 102, 0)
@@ -149,8 +158,6 @@ function love.draw()
     x = x + 1
 
     love.graphics.setColor(r, g, b, a)
-    love.graphics.ellipse("fill", position.x, position.y, 5, 5)
+    love.graphics.ellipse("fill", position.x, position.y, 5, 5)  
   end
-  
-  love.timer.sleep(SLEEP_TIMEOUT)
 end
